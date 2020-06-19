@@ -1,0 +1,339 @@
+---
+
+route: /grand-core
+menu: Grandjs Core
+sidebar: false
+---
+import {Playground, Props} from "docz";
+import {LogoComponent} from "./components/logo";
+
+# Grandjs Core
+<LogoComponent></LogoComponent>
+
+## Installing
+open the command prompt and navigate to the project folder and just say
+
+```
+npm install grandjs --save
+```
+
+
+## Import Grandjs
+to start with Grandjs just install it and call it in your file as the following
+
+**Javascript**
+
+```javascript
+const {Server, Router, Request, Response} = require("grandjs");
+```
+
+**Typescript**
+```typescript
+import {Server, Router, Request, Response} from "grandjs"
+```
+
+
+## Server Configuration
+
+```javascript
+
+Grandjs.setConfig({});
+
+```
+
+**this function takes one parameter as an object**
+
+```javascript
+Server.setConfig({
+    //define the port
+    port: process.env.PORT || 3000,
+    // http is optional you can specify http or https, if you don't specify Grandjs automatically require HTTP module
+    http: http,
+    // if you specified https so you should ssl files in this object
+    httpsMode: {
+        key: fs.readFileSync('test/fixtures/keys/agent2-key.pem'),
+        cert: fs.readFileSync('test/fixtures/keys/agent2-cert.pem')
+    },
+    // define the static files container folder
+    staticFolder: {
+        // set the path of the folder of assets
+        path: path.join(process.cwd(), "/public"),
+        // set the global url that will be consumed by http request
+        url: "/public"
+    },
+    //set the encryption key, Grandjs uses encription key to cypher info
+    ENCRYPTION_KEY: "ncryptiontestforencryptionproces",
+    // use native request body parser or not
+    nativeParser: true || false,
+
+    //set error page for global error pages
+    errorPage(req, res) {
+        res.end("error page");
+    },
+    // configure cors
+    cors : {
+        origin: '*',
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        preflightContinue: false,
+        optionsSuccessStatus: 204
+    }
+})
+```
+
+
+## Server Static
+
+Grandjs Exposes a function that allows you to specify static and assets directories easily with one function!
+
+This function is called `Server.static`, this function takes one parameter as an object with the following properties
+
+|property|type|required|description|
+|-|-|-|-|
+|url|string|true|the exposed url that will be resolved when it requested|
+|path|string|true|the internal path that will be resolved to read the files from it|
+|middlewares|Array(function)|true|A set of middlewares that you can apply before reading the files or resolve the directory|
+
+
+**Example**
+
+```typescript
+class MainRouter extends Router{}
+const mainRouter = new MainRouter({base: "/"});
+
+mainRouter.static({
+    url: "/assets",
+    path: path.join(process.cwd(), "/my-internal-assets")
+})
+
+```
+
+
+## Cors
+Grandjs uses Cors Module which is used in express, you can use the default settings of it as you use in expressjs
+
+Grandjs installs cors and set default configuration automatically, however you can set your own configurations
+
+
+## Cors Configuration
+Grandjs allows you to set cors configuration on multiple level of routes as the following:
+- cors setting over all app routes
+**Example**
+
+```javascript
+// javascript
+const {Server} = require("grandjs");
+// typescript
+
+import {Server} from "grandjs";
+
+Server.setConfig({
+    cors : {
+        origin: '*',
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+        preflightContinue: false,
+        optionsSuccessStatus: 204
+    },
+
+})
+```
+
+- cors setting over specific Router "group of routes"
+**Example**
+
+```javascript
+// javascript
+const {Server, Router} = require("grandjs");
+// typescript
+
+import {Server, Router} from "grandjs";
+class HomeRouter extends Router{
+    constructor(options) {
+        super(options);
+        this.cors = {
+            origin: '*',
+            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+            preflightContinue: false,
+            optionsSuccessStatus: 204
+        };
+    }
+}
+```
+- cors setting over specific route
+**Example**
+
+```javascript
+// javascript
+const {Server, Router} = require("grandjs");
+// typescript
+
+import {Server, Router} from "grandjs";
+class HomeRouter extends Router{
+    constructor(options) {
+        super(options);
+        this.getRouters = [this.homePage()];
+    }
+    homePage() {
+        return {
+            cors: {
+                origin: '*',
+                methods: 'GET,',
+                preflightContinue: false,
+                optionsSuccessStatus: 204
+        }   ,
+            //define the url of router
+            url: "/",
+            // define the method of the router
+            method: "GET",
+            handler: () => {
+                // handle the request and do the functionalities
+            }
+        }
+    }
+}
+```
+
+
+## Accessing Grandjs Server
+After initializing grandjs, maybe you want to use the created server or access on it's properties so you can access on grandjs node server via this property from grandjs
+
+```javascript
+// javascript
+const {Server} = require("grandjs");
+// typescript
+
+import {Server} from "grandjs";
+
+
+Server.Server
+```
+
+## Grandjs MiddleWares
+as every nodejs developer used to add middleware to the express app to be executed before the routes, grandjs does also something similar
+
+In grandjs you have three types of middlewares
+- global middleare over app
+- global middleware over single router class (group of routes)
+- private middleware over single route
+
+we will explain the last two types of middlewares in the Router section, but here we will talk about global middlewares over app.
+
+Global middlewares over app are middlewares you want to run before executing any router in the app, this type of middlewares often is used for injecting dependencies in the app or make global settings for the whole app.
+
+to set global middleware you can use `Server.use` function as the following:
+
+```javascript
+// javascript
+const {Server} = require("grandjs");
+// typescript
+
+import {Server} from "grandjs";
+Server.setConfig({});
+
+// add global middleware here
+Server.use();
+Server.initServer();
+```
+`Server.use` function takes one argument which should be a function, this function has regular three arguments as the following:
+```javascript
+Server.use((req, res, next) => {
+    // continue
+    return next();
+});
+```
+
+- `req` is the incoming request object
+- `res` is the response object to send response or set headers
+- `next` is a function to call to continue to the next middleware or to start executing the routers
+
+
+**Note**
+
+Grandjs takes the function which passed in `use` function and pushes it to an array of middlewares which will be executed later when a route hs requested, so these middlewares will be executed by their arrange inside the array.
+To continue to the next global middleware or to start executing the matched router class you have to call `next` function, without it the routes will not be executed.
+
+
+## Session
+
+This Module is deprecated, you can use [Express session](https://www.npmjs.com/package/express-session) and [Cookie-parser](https://www.npmjs.com/package/cookie-parser) instead!
+
+## Flash Messages
+
+This Module is deprecated, you can use [connect flash messages](https://www.npmjs.com/package/connect-flash) instead!
+
+**Example**
+
+```javascript
+// javascript
+const {Server} = require("grandjs");
+// typescript
+import {Server} = from "grandjs";
+
+const flash = require('connect-flash'),
+const session = require('express-session')
+const cookieParser = require("cookie-parser");
+Server.use(cookieParser('keyboard cat'));
+Server.use(session({ cookie: { maxAge: 60000 }}));
+Server.use(flash());
+```
+
+## Add MimeTypes
+
+
+
+if you want to serve more static files with another mimetype not exist in our built in mimetypes, so you can use the following function
+
+```javascript
+
+Server.addMimeTypes(extention, mimeType);
+```
+
+This function takes two parameters
+
+|Parameter| type| description|
+|---|---|----|
+|   extention   |  string (required) | represents the extention of the file that you want to check  |
+|   mimeType   |  string (required) | The mime type that you want to set in the response header for the specific file  |
+
+**Exmple**
+
+```javascript
+Server.addMimeTypes(".pdf", "application/pdf");
+```
+
+
+## Socket Io Support
+Grandjs is extendable to use with socket io for realtime applications, here is an example on using grandjs with socket io
+
+```javascript
+const {Server} = require("grandjs");
+const socketIo = require("socket.io");
+Server.setConfig({
+    //define the port
+    port: process.env.PORT || 3000,
+    // http is optional you can specify http or https, if you don't specify Grandjs automatically require HTTP module
+    http: http,
+    // if you specified https so you should ssl files in this object
+    httpsMode: {
+        key: fs.readFileSync('test/fixtures/keys/agent2-key.pem'),
+        cert: fs.readFileSync('test/fixtures/keys/agent2-cert.pem')
+    }
+    //set the encryption key, Grandjs uses encription key to cypher info
+    ENCRYPTION_KEY: "ncryptiontestforencryptionproces",
+
+    //set error page for global error pages
+    errorPage(req, res) {
+        res.end("error page");
+    }
+});
+
+// init Grandjs
+Server.initServer();
+
+
+const io = socketIo(Server.Server);
+io.on("connect", () => {
+    console.log("connected successfully")
+})
+```
+
+now once you run the application you can connect on socket via port `3000`

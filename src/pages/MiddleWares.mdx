@@ -1,0 +1,54 @@
+---
+name: MiddleWares
+route: /middlewares
+menu: Grandjs Core
+---
+
+
+
+# MiddleWares
+middleWares is a group of functions used to run something before executing the final handler
+
+the middWares property should be an array includes the functions
+
+Every middleware should have three parameters
+
+| parameter  | type  | description  |
+|---|---|---|
+| req  | object  | implies the coming request object contains all information about the request  |
+|res   | object  | represents the response object  |
+| next  | function  | is a function you can execute it to continue to the next middleWare or to the final handler of the router  |
+
+**Example**
+
+```javascript
+//middle ware
+function writeWithMiddleware(req, res, next) {
+    // has three parameters
+    /*
+    1- req: the request object
+    2- res: the response object
+    3- next: a function you execute it to continue to the handler
+    */
+   res.write("from middleware");
+   next();
+}
+homePage() {
+    return {
+        url: "/home",
+        middleWares: [],
+        method: "get",
+        handler: (req, res) => {
+            res.end("hello home page");
+
+            // final output on the browser:
+            //from middleware
+            //hello home page
+        }
+    }
+}
+```
+
+**note**
+
+that the middlWares array can include many middleWare functions and the middleWares are applied according to the indexing inside the array

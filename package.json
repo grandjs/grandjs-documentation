@@ -1,0 +1,21 @@
+{
+  "name": "grandjs-docs",
+  "version": "2.0.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "docz dev",
+    "build": "docz build",
+    "serve": "docz serve"
+  },
+  "files": [
+    "src/",
+    "doczrc.js",
+    "package.json"
+  ],
+  "dependencies": {
+    "docz": "latest",
+    "prop-types": "^15.7.2",
+    "react": "^16.11.0",
+    "react-dom": "^16.11.0"
+  }
+}

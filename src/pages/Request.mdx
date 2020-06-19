@@ -1,0 +1,133 @@
+---
+name: Request
+route: /request
+menu: Grandjs Core
+---
+
+
+# Request Object
+this is an object you can access on it inside the handler of the route
+and the object contains all information about the request which is coming
+
+|Property   |  type |  description |
+|---|---|---|
+| req.method  | string  | returns the method of the current request  |
+|  req.pathname |  string |  returns the requested URL without query string |
+|req.path  |  string | returns the requested URL with query string |
+|req.href  |  string | returns the requested URL with query string |
+| req.url  |  object | returns object contains the parsed URL  |
+|req.query   |  object | contains the query & search in the URL(it parsed as key and value)  |
+| req.params  |  object | returns the query parameters if it exists as key and value  |
+| req.validation  | object  | returns an object contains some helper functions to validate the email and string  |
+| req.data  | object  | returns an object contains the posted data if the method is "post"  |
+| req.body  | object  | returns an object contains the posted data if the method is "post"  |
+|  req.headers | object  | returns the headers of the coming request  |
+| req.flash  | object  |  this object enables you to set messages to send it to handlebars to show to the user |
+
+#### Request params
+returns an object contains the parameters of the router URL and it's value if it exists
+if there are no params so it returns an empty object
+
+**Example**
+
+```javascript
+const homePage = new Router({
+    baes: "/"
+})
+home.addRoute({
+    url: "/posts/:category",
+    method: "get",
+    handler: (req, res) => {
+        // user requested http://localhost:300/posts/tech?postId=2
+        console.log(req.params); //output {category:"tech"};
+        console.log(req.query) //output {postId: 2}
+        console.log(req.pathname) //output /posts/tech
+        console.log(req.path) //output /posts/tech?postId=2
+        console.log(req.href) //output /posts/tech?postId=2
+        console.log(req.method) //output "get"
+        console.log(req.url)
+        console.log(req.body);
+        console.log(req.data);
+        /* output
+        Url {
+        protocol: null,
+        slashes: null,
+        auth: null,
+        host: null,
+        port: null,
+        hostname: null,
+        hash: null,
+        search: '?postId=2',
+        query: 'postId=2',
+        pathname: '/posts/tech',
+        path: '/posts/tech?postId=2',
+        href: '/posts/tech?postId=2' }
+        */
+    }
+});
+```
+
+## Handle post request
+
+Grandjs handles all types of post requests and submitted data and returns them as an object called ``req.data`` and another property `req.body` this object contains all the submitted data and you can access on it inside the handler function if the method of the router is post
+
+**Example**
+
+```javascript
+postAdminPage() {
+    return {
+        method: "post",
+        url: "/admin/addinfo",
+        handler: (req, res) => {
+            console.log(req.data || req.data) //output {} contains all submitted info
+        }
+    }
+}
+```
+
+
+## Request Uploaded Files
+
+In Grandjs You can upload files easily without any extra settings, all you should do is specifying Request header as `multipart/form-data`
+
+Grandjs Uses multiparty package for file uploading
+
+You can access on the uploaded files via `files` property in the request object as the following:
+
+```javascript
+postAdminPage() {
+    return {
+        method: "post",
+        url: "/admin/uploadInfo",
+        handler: (req, res) => {
+            console.log(req.files) //output {} contains all uploaded files
+        }
+    }
+}
+```
+
+`req.files` property is an object which includes the uploaded files as properties, each property incarnates the uploaded file as an object, but if there are multiple files uploaded with the same filed name so they will be grouped together inside the property name as an array of objects
+
+each object has the following properties:
+
+```javascript
+{
+      name: 'images' // the name of the filed,
+      filename: 'download (1).jpeg' // original file name,
+      data: <Buffer> // the file content as buffer,
+      size: 14473 // size of file,
+      extension: '.jpg' // the extension type of file,
+      mimetype: 'image/jpeg' // mime type of file,
+      stream: [Duplex] // ability to use this file to stream it,
+       headers: [Object] // the sent headers with this file,
+      byteOffset: 147,
+      byteCount: 27975 // bytes count
+
+```
+**Note**
+
+For Request Body parsing you have two options
+
+- use native Grandjs request parser which will also parse request with formdata
+
+- use `body-parser` package for parsing json requests and use `express-fileupload` for parsing `multipart/form-data` request body

@@ -1,0 +1,167 @@
+---
+name: JSX
+route: /jsx
+menu: Grandjs Core
+---
+
+# JSX Components
+
+```jsx
+// jsx
+// importing {View} is mandatory
+const {View} = require("grandjs");
+// typescript
+import {View} from "grandjs";
+const App = (props) => {
+    return (
+        <div>
+            <h1>hello App Component</h1>
+        </div>
+    )
+}
+module.exports = App;
+```
+
+
+## About
+Grandjs Depends on JSX for rendering dynamic/static HTML markups, it converts the jsx syntax to html string by native parser, also the rendered JSX markup is a stateless
+
+Grandjs loads JSX components and files on runtime fastly without a need to bable or any transpilers, Grandjs uses `import-jsx` package for requiring jsx files
+
+## Why ?
+
+Actually there is many different template engines can be used, all these template engines are efficient and good to work with, but you will learn a new syntax of each template engine, also you will suffer from the hassle of searching helpers for this template engine to add new features like conditions, mathematical operations inside the html markup, however we have JSX!
+Most of developers now know JSX and know how can they render it, "thanks React!", so We see using JSX is good, efficient and fast in rendering and Friendly syntax that allow you to write the whole Application in just javascript, with getting the benefits if Javascript methods, helpers, functions inside the HTML markup
+
+
+## How ?
+
+Grandjs exports an object called `View`, this object includes some builtin methods and configuration for parsing, and caching jsx syntax and converting it to html strings and then send this HTML markup to the browser
+
+**Note**
+JSX syntax shouldn't be written in the entry point file, you should create a folder called `views` for example and put all JSX code there by dividing into functional components and requiring the component you wherever you want
+
+in App.jsx
+
+```jsx
+// jsx
+// importing {View} is mandatory
+const {View} = require("grandjs");
+// typescript
+import {View} from "grandjs";
+const App = (props) => {
+    return (
+        <div>
+            <h1>hello App Component</h1>
+        </div>
+    )
+}
+module.exports = App;
+```
+in Home.jsx file
+```jsx
+const {View} = require("grandjs");
+// typescript
+import {View} from "grandjs";
+const App = View.importJsx("./App.jsx");
+const Home = (props) => {
+    return (
+        <div>
+            <h1>This is home page</h1>
+            <App/>
+        </div>
+    )
+}
+module.exports = Home;
+```
+
+**Note**
+
+
+- Any Component you write you have to import `{View}` inside the file that you write the component in, to make grandjs recognize and compile that file
+
+- The component should be a functional Component as the following:
+
+```jsx
+const App = (props) => {
+    return (
+        <div>
+            <h1>hello App Component</h1>
+        </div>
+    )
+}
+```
+
+- You have to export the component as a nodejs module in commonjs syntax like the following:
+
+```jsx
+module.exports = App;
+```
+
+- Importing JSX Component Should be using `View.importJsx` function which will recognize that this file is jsx syntax
+
+```javascript
+const Home = View.importJsx("./views/Home.jsx");
+```
+
+
+```javascript
+// importing {View} is mandatory
+const {Server, View, Router} = require("grandjs");
+// typescript
+import {Server, View, Router} from "grandjs";
+// import Home Page
+const Home = View.importJsx("./views/Home.jsx");
+const router = new Router({base: "/"})
+
+router.addRoute({
+    url: "/",
+    method: "GET",
+    handler: (req, res) => {
+        return res.status(200).render(Home, {})
+    }
+})
+router.build();
+Server.setConfig({port: 3000});
+Server.initServer();
+```
+
+## View Define Styles
+
+Grandjs exposes to you a method called `View.createStyle` which is a method in `View` class that you can use to create a style as an object and use this style with defined classes inside your component as you can do in react
+
+**Example**
+
+```javascript
+const {View} = require("grandjs")
+
+const Styles = View.createStyle({
+    title: {
+        backgroundColor: "red"
+    }
+    title2: {
+        color: "green"
+    }
+})
+
+const App = () => {
+    const classes = Styles();
+    return (
+        <div>
+            <h1 className={classes.title}></h1>
+            <style src={classes.style}/>
+        </div>
+    )
+}
+```
+
+## View Render Component To HTML
+
+Also View class exposes to you a method called `renderToHtml` which is can be used to render the component into raw html string, this can be useful if you want to send your components as mail templates!
+
+```javascript
+const {View} = require("grandjs");
+const Home = View.importJsx("./views/Home.jsx");
+
+const template = View.renderToHtml(Home, {});
+```

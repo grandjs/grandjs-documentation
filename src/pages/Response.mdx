@@ -1,0 +1,133 @@
+---
+name: Response
+route: /response
+menu: Grandjs Core
+---
+
+# Response Object
+
+this is an object you can access on it inside the handler of the route
+This object contains all methods that you need to send a response or content to the coming request
+
+## ``res.render`` function
+
+This function you use it to render HTML content using JSX Stateless Components
+
+```javascript
+res.render()
+```
+takes one parameter as an object, this object should contain the following properties
+
+| property  |  type | description |
+|---|---|---|
+|  Component |  Function | A functional Component written in JSX Syntax to be rendered as an HTML|
+| data  | object (optional)  | object contains the data you want to render inside the rendered component
+
+**Example**
+
+Create App.jsx File
+```jsx
+// import View here (mandatory)
+// javascript
+const {View} = require("grandjs");
+
+// typescript
+import {View} from "grandjs";
+const App = (props) => {
+    return (
+        <div>
+            Hello world
+            <h2>{props.message}</h2>
+        </div>
+    )
+}
+// use native exporting method either for typescript or javascript
+module.exports = App
+```
+
+```javascript
+// javascript
+const {Server, Router, View} = require("grandjs");
+
+// typescript
+import {Server, Router, View} from "grandjs";
+
+// load jsx file
+const App = View.importJsx("./App.jsx");
+    homePageRouter() {
+        return {
+            url: "/",
+            method: "get",
+            handler: () => {
+                // render jsx component
+                this.res.render(App, {message: "Hello Grandjs"})
+            }
+        }
+    }
+```
+
+## ``res.write`` function
+
+this function is like the native api of node.js, it allows you to send strings to the client
+
+```javascript
+res.write("hello world");
+//end the response
+res.end("");
+```
+
+## ``res.end`` function
+this function is like the native api of node.js, it allows you to send strings to the client
+
+```javascript
+res.end("hello world");
+```
+
+
+## ``res.sendFile`` function
+```javascript
+res.sendFile(path);
+```
+this function takes on parameter
+
+|parameter   |  type | description  |
+|---|---|---|
+|  path |  String (required) | this parameter should specify the path of the file which you want to send |
+
+this function uses promise to return a ``catch`` function if the file isn't exist
+
+**Example**
+
+```javascript
+res.sendFile("/views/pages/home.html").catch((err) => {
+    console.log(err) //output no such file
+})
+```
+
+## ``res.json`` function
+
+this function sends json data, it accepts one parameter this parameter should be an object and Grandjs stringify this object automatically
+
+```javascript
+res.json({user: "tarek", email: "test@gmail.com", id: 1});
+```
+
+## ``res.redirect`` function
+This function is used to make redirect to another link
+It accepts one parameter
+
+|parameter   |  type | description  |
+|---|---|---|
+|  url |  String (required) | this parameter should specify url that you want to redirect to |
+
+```javascript
+res.redirect("/anotherurl");
+```
+
+# ``res.status`` function
+this function sets the status of the response with http status code, it accepts one parameter which is the status code of the response
+
+```javascript
+
+res.status(200).json({user: "tarek", email: "test@gmail.com", id: 1});
+```
