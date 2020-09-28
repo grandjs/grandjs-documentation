@@ -7,9 +7,115 @@ menu: Grandjs Core
 
 
 # MiddleWares
-middleWares is a group of functions used to run something before executing the final handler
+middleWares are a group of functions used to run something before executing the final handler
 
-the middWares property should be an array includes the functions
+## Concept
+
+Grandjs Uses MiddleWares to enable the program to execute functions and some code before executing the final handler which enable you to edit the executed code without affecting the code base, basically middleware is a someway of applying aspect-oriented programming in nodejs
+
+Grandjs applies middleWares on different levels as the following:
+
+- Application level
+- Router level
+- Route level
+
+
+## Implementation
+
+Actually with grandjs you can define your middleWares in different ways
+
+### Apply MiddleWares on Application level
+
+you can apply grandjs middlewares on Application level by using `use` property
+
+```typescript
+import { Server, HttpStatusCode } from "grandjs";
+
+Server.setConfig({
+  port: 3000,
+  nativeParsing: true,
+  errorPage(req, res) {
+    res.status(HttpStatusCode.NOT_FOUND).end("not found page");
+},
+})
+// apply a middleWare
+Server.use((req, res, next) => {
+  console.log("this middleware will be applied on every route on the application")
+})
+
+Server.initServer(() => {
+  console.log('server is initialized')
+});
+```
+
+this middleWare will be executed when you request any url on the server
+
+In this way you can use the any third party package that you use with express like body parser or cookie parser or any package that is can be consumed as a middleWare
+
+
+### Apply MiddleWares on Router level
+
+In this level, the middleWare will be applied on all the routes that are defined inside this router and also will be applied on all child routers, This type of middleWares in grandjs called global MiddleWares
+
+Implementing MiddleWare on the router level can be applied using different ways
+
+1. Using ``router.use`` method
+
+```typescript
+import { Router } from 'grandjs';
+
+class MyRouter extends Router {}
+
+const myRouter = new MyRouter({ base: '/' });
+myRouter.use((req, res, next) => {
+    console.log("apply this middleWare on all routes related to this router")
+    return next();
+});
+
+```
+
+2. Using ``this.use`` method
+
+If you want to define your router middleWares inside your constructor you can use the a pattern like the following:
+
+```typescript
+
+class MyRouter extends Router {
+    constructor(props) {
+        super(props)
+        this.use((req, res, next) => {
+            console.log("apply this middleWare on all routes related to this router")
+            return next();
+        })
+    }
+}
+
+```
+
+3. Using `MiddleWare` decorator
+
+In this way, if you are familiar with typescript decorators you can use `@MiddleWare` decorator to define a router global middleWare
+
+```typescript
+import { Router, MiddleWare } from "grandjs";
+
+class MyRouter extends Router {
+    @MiddleWare
+    applyOnAll(req, res, next) {
+        console.log("apply this middleWare on all routes related to this router")
+        return next();
+    }
+}
+```
+### Apply MiddleWares on Route level
+
+In this level, the middleWare will be applied on the specified route only and this is called in grandjs as private middleWare
+
+To define private middleWares for a specific route in grandjs you can use one of the following ways
+
+- Push middleWares in an array
+
+the middleWares property should be an array that includes the functions
 
 Every middleware should have three parameters
 
@@ -19,7 +125,7 @@ Every middleware should have three parameters
 |res   | object  | represents the response object  |
 | next  | function  | is a function you can execute it to continue to the next middleWare or to the final handler of the router  |
 
-**Example**
+**Javascript Example**
 
 ```javascript
 //middle ware
@@ -52,3 +158,57 @@ homePage() {
 **note**
 
 that the middlWares array can include many middleWare functions and the middleWares are applied according to the indexing inside the array
+
+**Typescript Example Using Decorator**
+
+```typescript
+import { Router, GET } from "grandjs";
+
+class MyRouter extends Router {
+    @GET({
+        middleWares: [
+            (req, res, next) => {
+                console.log("apply this middleWare on url /dashboard get request");
+                return next();
+            }
+        ],
+        url: "/dashboard",
+    })
+    getDashboard(req, res) {
+        return res.end("dashboard");
+    }
+}
+```
+
+- Using `@RouteMiddleWare` decorator
+
+if you are familiar with typescript, you can use decorators to inject middleWare inside your router to be applied on a specific route
+
+```typescript
+import { Router, GET, RouteMiddleWare, RequestMethod } from "grandjs";
+
+class MyRouter extends Router {
+    @GET({
+        url: "/dashboard",
+    })
+    getDashboard(req, res) {
+        return res.end("dashboard");
+    }
+
+    @RouteMiddleWare({
+        url: '/dashbaord',
+        method: RequestMethod.GET
+    })
+    applyPrivateMiddleWare(req, res, next) {
+        console.log("apply this middleWare on url /dashboard get request");
+        return next();
+    }
+}
+```
+
+the ``RequestMethod`` decorator takes one parameter as an object as the following:
+
+| property  | type  | description  |
+|---|---|---|
+| url  | string  | specify the route url you want to apply this middleWare on it, if this url is (``*``) then the middleWare will be applied on all routes that matches the request method  |
+|method   | string  | the request method of routes that you want to apply the middleWare on them (GET, POST, PATCH, PUT, DELETE, ALL) all means all routes that match the url and has any request method  |
