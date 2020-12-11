@@ -550,12 +550,18 @@ Currently grandjs supports the following decorators
 - `PUT` (for put methods)
 - `DELETE` (for delete methods)
 - `MiddleWare` (for methods that act as middleWares)
+- `RouteMiddleWare` (to apply middleWare on specific route with specific method)
+- `Use` (this decorator to apply middleWare on the router class for specific routes with specific methods)
 
 **Example**
 ```typescript
 import {Router, Request, Response} from "grandjs"
 import {GET, POST, PATCH, PUT, DELETE, MiddleWare} from "grandjs";
 
+@Use('/*', (req, res, next) => {
+    console.log('global middleWare on all routes');
+    return next();
+})
 class UserRouter extends Router{
   // get user page
   @GET({url: "/user"})
