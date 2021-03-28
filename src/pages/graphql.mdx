@@ -1,0 +1,70 @@
+---
+name: GraphQl
+route: /grand-graphql
+---
+
+
+# GraphQl for Grandjs
+Grandjs now supports graphql using apollo server for building performant APis using graphql with the help of grandjs speed
+
+## Installing
+
+```cmd
+npm i apollo-grand-server
+```
+### Dependencies
+You need to install the following dependencies to be able to use `apollo-grand-server`
+
+- type-graphql
+- grand-connectors
+- grandjs
+- reflect-metadata
+
+### Using
+At first import grandjs needed Classes and utilities
+```typescript
+import { Server, Router } from 'grandjs';
+```
+to start use apollo server you need to import it from `apollo-grand-server` library as the following:
+
+```typescript
+import { ApolloServer } from 'apollo-grand-server';
+```
+Setting Up Grandjs Server
+
+```typescript
+Server.setConfig({
+  port: 3000,
+  nativeParsing: false,
+  cors : {
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204
+},
+})
+
+Server.use(<any>urlencoded({extended: false}));
+Server.use(<any>json());
+```
+
+Then initiate grandjs server
+
+```typescript
+Server.initServer(() => {
+  console.log(`server now is running on 3000`)
+})
+```
+
+Then instantiate `ApolloServer` class as the following:
+
+```typescript
+const server = new ApolloServer({schema});
+```
+
+Now you need to use `applyMiddleWare` method from `apollo grandjs Server` as the following:
+
+```typescript
+server.applyMiddleware({Router});
+```
+
